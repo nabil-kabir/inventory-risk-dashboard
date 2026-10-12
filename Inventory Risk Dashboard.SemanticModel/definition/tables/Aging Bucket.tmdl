@@ -1,0 +1,39 @@
+/// Five age bands for stock on hand.
+table 'Aging Bucket'
+	lineageTag: fa0a97f4-b0fa-4d70-bd9b-b5c46c4c2262
+
+	column 'Aging Bucket Key'
+		dataType: int64
+		isHidden
+		lineageTag: ea7efbcf-06b8-4082-9f2f-89a103a2a8f5
+		summarizeBy: none
+		sourceColumn: aging_bucket_key
+
+	column 'Aging Bucket'
+		dataType: string
+		lineageTag: 22691a77-734b-4ee4-baad-d7e345d6966a
+		sourceColumn: aging_bucket
+		sortByColumn: 'Aging Bucket Key'
+
+	column 'Min Days'
+		dataType: int64
+		lineageTag: de798a5a-57f4-4cfa-b013-392f13309d32
+		summarizeBy: none
+		sourceColumn: min_days
+
+	column 'Max Days'
+		dataType: int64
+		lineageTag: a52ec717-251e-4c63-8b3b-d2e2c11c0e12
+		summarizeBy: none
+		sourceColumn: max_days
+
+	partition 'Aging Bucket' = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ModelFolder & "dim_aging_bucket.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Headers, {{"aging_bucket_key", Int64.Type}, {"aging_bucket", type text}, {"min_days", Int64.Type}, {"max_days", Int64.Type}}, "en-US")
+				in
+				    Typed
+

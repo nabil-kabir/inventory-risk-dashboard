@@ -1,0 +1,98 @@
+/// Real Olist order lines (one unit each), January 2017 to July 2018. Unit cost comes from the FIFO batch the unit was taken from.
+table Sales
+	lineageTag: fc1b1978-caf7-419c-898e-cf7ad8781f4f
+
+	column 'Order ID'
+		dataType: string
+		isHidden
+		lineageTag: 34f86f0b-80d2-403a-bb42-6c49b4130023
+		sourceColumn: order_id
+
+	column 'Order Item ID'
+		dataType: int64
+		isHidden
+		lineageTag: 9f589400-dfac-46ad-8dd2-836b49bdfb22
+		summarizeBy: none
+		sourceColumn: order_item_id
+
+	column 'Order Date'
+		dataType: dateTime
+		isHidden
+		formatString: d mmm yyyy
+		lineageTag: 8185f19f-2397-4da3-8012-fdd2c6957e06
+		summarizeBy: none
+		sourceColumn: order_date
+
+	column 'SKU Key'
+		dataType: int64
+		isHidden
+		lineageTag: 3262da0c-3118-466c-b489-f8791effdd3b
+		summarizeBy: none
+		sourceColumn: sku_key
+
+	column 'Batch ID'
+		dataType: int64
+		isHidden
+		lineageTag: e8b2cef7-d0f5-491d-8a50-621b6ee98b33
+		summarizeBy: none
+		sourceColumn: batch_id
+
+	column 'Customer State'
+		dataType: string
+		lineageTag: c8cfb730-5782-4155-9870-faba21da79c9
+		dataCategory: StateOrProvince
+		sourceColumn: customer_state
+
+	column 'Order Status'
+		dataType: string
+		lineageTag: 5e10f893-eae6-49aa-8d91-85082911f719
+		sourceColumn: order_status
+
+	column Units
+		dataType: int64
+		isHidden
+		lineageTag: 74d1c1c0-11cf-4b76-bc74-3f241a3cf780
+		sourceColumn: units
+
+	column Price
+		dataType: decimal
+		isHidden
+		lineageTag: 91e98a7c-595c-4762-a120-5db1b39ce38a
+		sourceColumn: price
+
+	column Freight
+		dataType: decimal
+		isHidden
+		lineageTag: ed6dbcda-c1f3-49f0-8778-819e8e5fde7a
+		sourceColumn: freight
+
+	column 'Unit Cost'
+		dataType: decimal
+		isHidden
+		lineageTag: b7f07a39-b5af-4b43-a553-c1c0009bdd73
+		sourceColumn: unit_cost
+
+	column 'Gross Margin'
+		dataType: decimal
+		isHidden
+		lineageTag: 2df72caa-5a80-4aa3-a128-596ceda310fd
+		sourceColumn: gross_margin
+
+	column 'Age at Sale Days'
+		dataType: int64
+		isHidden
+		lineageTag: 27a49cd4-f4e1-48a1-b3c2-c827220a6746
+		summarizeBy: none
+		sourceColumn: age_at_sale_days
+
+	partition Sales = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ModelFolder & "fact_sales.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Kept = Table.SelectColumns(Headers, {"order_id", "order_item_id", "order_date", "sku_key", "batch_id", "customer_state", "order_status", "units", "price", "freight", "unit_cost", "gross_margin", "age_at_sale_days"}),
+				    Typed = Table.TransformColumnTypes(Kept, {{"order_id", type text}, {"order_item_id", Int64.Type}, {"order_date", type date}, {"sku_key", Int64.Type}, {"batch_id", Int64.Type}, {"customer_state", type text}, {"order_status", type text}, {"units", Int64.Type}, {"price", Currency.Type}, {"freight", Currency.Type}, {"unit_cost", Currency.Type}, {"gross_margin", Currency.Type}, {"age_at_sale_days", Int64.Type}}, "en-US")
+				in
+				    Typed
+

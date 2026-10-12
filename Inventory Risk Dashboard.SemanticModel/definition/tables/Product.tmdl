@@ -1,0 +1,83 @@
+/// Olist products with English category and price band.
+table Product
+	lineageTag: 5c55ebb8-1dd6-4445-b4c0-a3005a2d144c
+
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		lineageTag: dafe5167-8084-4f98-9b8f-faada9a01989
+		summarizeBy: none
+		sourceColumn: product_key
+
+	column 'Product ID'
+		dataType: string
+		isHidden
+		lineageTag: f95818e1-927f-4f2e-8424-c29893d2db08
+		sourceColumn: product_id
+
+	column 'Product Code'
+		dataType: string
+		lineageTag: bd370a10-9433-4ae9-8a83-7178bde51341
+		sourceColumn: product_code
+
+	column 'Category Key'
+		dataType: string
+		isHidden
+		lineageTag: 9fb4afdf-c1e1-4434-88bd-77eea1debc4d
+		sourceColumn: category_key
+
+	column Category
+		dataType: string
+		lineageTag: 644bdd17-9b93-4bca-b6f8-f4353da70fd4
+		sourceColumn: category
+
+	column 'Category Portuguese'
+		dataType: string
+		isHidden
+		lineageTag: e170ddda-c6c6-4948-80f8-329318415cee
+		sourceColumn: category_pt
+
+	column 'Median Price'
+		dataType: decimal
+		formatString: "R$"#,0.00
+		lineageTag: 7674f186-a53a-43e9-98ec-7eadd166886e
+		summarizeBy: none
+		sourceColumn: median_price
+
+	column 'Price Band Sort'
+		dataType: int64
+		isHidden
+		lineageTag: d1434a0d-a551-4603-a541-985158815cb5
+		summarizeBy: none
+		sourceColumn: price_band_sort
+
+	column 'Price Band'
+		dataType: string
+		lineageTag: 14d0a81e-da80-4354-9097-e3bc246f697c
+		sourceColumn: price_band
+		sortByColumn: 'Price Band Sort'
+
+	column 'Weight g'
+		dataType: int64
+		isHidden
+		lineageTag: 54093de0-90f7-4f2e-939c-04a26c8e9498
+		summarizeBy: none
+		sourceColumn: weight_g
+
+	column Photos
+		dataType: int64
+		isHidden
+		lineageTag: 7c5b9cc5-42d4-4bbe-bbce-82082fb86576
+		summarizeBy: none
+		sourceColumn: photos
+
+	partition Product = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ModelFolder & "dim_product.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Headers, {{"product_key", Int64.Type}, {"product_id", type text}, {"product_code", type text}, {"category_key", type text}, {"category", type text}, {"category_pt", type text}, {"median_price", Currency.Type}, {"price_band_sort", Int64.Type}, {"price_band", type text}, {"weight_g", Int64.Type}, {"photos", Int64.Type}}, "en-US")
+				in
+				    Typed
+

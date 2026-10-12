@@ -1,0 +1,51 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "about_header",
+  "position": {
+    "x": 24,
+    "y": 6,
+    "z": 0,
+    "height": 76,
+    "width": 690,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "textbox",
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "About this project",
+                    "textStyle": {
+                      "fontSize": "18pt",
+                      "color": "#ECE7DF",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontWeight": "bold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "How the data was built, how risk is measured, and who made it.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#8B97A3",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

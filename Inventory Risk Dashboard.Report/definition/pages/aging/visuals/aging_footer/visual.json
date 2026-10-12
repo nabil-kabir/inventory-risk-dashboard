@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "aging_footer",
+  "position": {
+    "x": 24,
+    "y": 678,
+    "z": 13000,
+    "height": 42,
+    "width": 1232,
+    "tabOrder": 13000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Simulated inventory based on real demand  ·  Olist Brazilian ecommerce orders, Jan 2017 to Jul 2018  ·  values at cost in Brazilian reais (R$)  ·  as of 31 July 2018",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#8B97A3",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

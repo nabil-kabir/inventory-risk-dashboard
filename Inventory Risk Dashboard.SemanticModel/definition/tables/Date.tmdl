@@ -1,0 +1,94 @@
+/// Calendar 2016 to 2018. Month end rows are the stock snapshot dates; 31 July 2018 is the as of date.
+table Date
+	lineageTag: 6c6e6376-9f5a-4289-acaf-8f40352be67e
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isUnique
+		formatString: d mmm yyyy
+		lineageTag: 11f66482-f8d4-475b-86d3-08d524a0f8b7
+		summarizeBy: none
+		sourceColumn: date
+
+	column Year
+		dataType: int64
+		lineageTag: 4035f077-3ee6-426c-a984-e19dca5e2fbf
+		summarizeBy: none
+		sourceColumn: year
+
+	column Quarter
+		dataType: string
+		lineageTag: 17548ff4-b8f0-474b-b686-0d1f1d4652d9
+		sourceColumn: quarter
+
+	column 'Month Number'
+		dataType: int64
+		isHidden
+		lineageTag: 416b1aa2-d0b7-4e20-ad81-2802e806ed8c
+		summarizeBy: none
+		sourceColumn: month_num
+
+	column Month
+		dataType: string
+		lineageTag: c2a5372e-3ac1-4d4b-9ecc-4b960c353f51
+		sourceColumn: month_name
+		sortByColumn: 'Month Number'
+
+	column 'Month Short'
+		dataType: string
+		lineageTag: 6f3786d3-95a8-47be-9aab-1d6148029cd9
+		sourceColumn: month_short
+		sortByColumn: 'Month Number'
+
+	column 'Year Month'
+		dataType: string
+		lineageTag: ca6d5afe-8cba-430d-aca1-a6f09670717f
+		sourceColumn: year_month
+		sortByColumn: 'Year Month Sort'
+
+	column 'Year Month Sort'
+		dataType: int64
+		isHidden
+		lineageTag: 1434a521-76b2-4f04-b9a4-198a215f876c
+		summarizeBy: none
+		sourceColumn: year_month_sort
+
+	column 'Day of Week'
+		dataType: int64
+		isHidden
+		lineageTag: 5d43f0af-2323-48aa-945f-32255e3195eb
+		summarizeBy: none
+		sourceColumn: day_of_week
+
+	column 'Is Month End'
+		dataType: int64
+		isHidden
+		lineageTag: f59eae7e-0849-409a-8daf-93d233320519
+		summarizeBy: none
+		sourceColumn: is_month_end
+
+	column 'Is Snapshot Date'
+		dataType: int64
+		isHidden
+		lineageTag: d8089c6a-f54a-4a8b-a2ea-aacd86410ba8
+		summarizeBy: none
+		sourceColumn: is_snapshot_date
+
+	column 'Is As Of Date'
+		dataType: int64
+		isHidden
+		lineageTag: 2775b690-2afd-4d9f-abf2-ea44e4069f61
+		summarizeBy: none
+		sourceColumn: is_as_of_date
+
+	partition Date = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ModelFolder & "dim_date.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Headers, {{"date", type date}, {"year", Int64.Type}, {"quarter", type text}, {"month_num", Int64.Type}, {"month_name", type text}, {"month_short", type text}, {"year_month", type text}, {"year_month_sort", Int64.Type}, {"day_of_week", Int64.Type}, {"is_month_end", Int64.Type}, {"is_snapshot_date", Int64.Type}, {"is_as_of_date", Int64.Type}}, "en-US")
+				in
+				    Typed
+

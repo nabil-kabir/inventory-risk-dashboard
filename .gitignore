@@ -1,0 +1,16 @@
+# Power BI local state
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+
+# Data: download Olist from Kaggle into data/raw, then run scripts/build_model.py
+data/raw/
+data/model/*.csv
+
+# The .pbix is attached to GitHub releases, not committed
+release/
+*.pbix
+
+# Personal working files
+PLAN.md
+practice/
+__pycache__/

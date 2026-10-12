@@ -1,0 +1,56 @@
+/// Simulated purchase batches arriving into stock.
+table Receipts
+	lineageTag: 9f542baa-1708-4f86-91b5-7a9a72660c3d
+
+	column 'Batch ID'
+		dataType: int64
+		isHidden
+		lineageTag: 9508e99e-f973-4931-81a1-4fd02ca6cdb8
+		summarizeBy: none
+		sourceColumn: batch_id
+
+	column 'SKU Key'
+		dataType: int64
+		isHidden
+		lineageTag: 66901c25-ca88-487b-9172-d1e68b4acf69
+		summarizeBy: none
+		sourceColumn: sku_key
+
+	column 'Received Date'
+		dataType: dateTime
+		isHidden
+		formatString: d mmm yyyy
+		lineageTag: 14ae9ea6-1c27-4af1-9426-53f3d385a3bb
+		summarizeBy: none
+		sourceColumn: received_date
+
+	column 'Units Received'
+		dataType: int64
+		isHidden
+		lineageTag: 4cdc8061-79dc-41e1-b19c-3d2ca2a3885e
+		sourceColumn: units_received
+
+	column 'Unit Cost'
+		dataType: decimal
+		isHidden
+		lineageTag: bf66e9d0-6b85-484b-8b32-8062bf9dd545
+		summarizeBy: none
+		sourceColumn: unit_cost
+
+	column 'Value at Cost'
+		dataType: decimal
+		isHidden
+		lineageTag: 8ccfed69-8c6e-47c8-8ed8-b220d2ffe30b
+		sourceColumn: value_at_cost
+
+	partition Receipts = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ModelFolder & "fact_receipts.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Kept = Table.SelectColumns(Headers, {"batch_id", "sku_key", "received_date", "units_received", "unit_cost", "value_at_cost"}),
+				    Typed = Table.TransformColumnTypes(Kept, {{"batch_id", Int64.Type}, {"sku_key", Int64.Type}, {"received_date", type date}, {"units_received", Int64.Type}, {"unit_cost", Currency.Type}, {"value_at_cost", Currency.Type}}, "en-US")
+				in
+				    Typed
+

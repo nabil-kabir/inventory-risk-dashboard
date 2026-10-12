@@ -1,0 +1,105 @@
+/// One product sold by one seller: the grain of the stock simulation.
+table SKU
+	lineageTag: eead0291-bc83-4afc-94a7-e5d97145a84a
+
+	column 'SKU Key'
+		dataType: int64
+		isHidden
+		lineageTag: f5919540-35c1-4ef2-ab9a-2d5a22ba6a71
+		summarizeBy: none
+		sourceColumn: sku_key
+
+	column SKU
+		dataType: string
+		lineageTag: 3c092353-f3fc-4600-a7f6-2507630c2aaf
+		sourceColumn: sku_code
+
+	column 'Product Key'
+		dataType: int64
+		isHidden
+		lineageTag: 6f8bfc64-39c2-464c-acac-9288c0917514
+		summarizeBy: none
+		sourceColumn: product_key
+
+	column 'Seller Key'
+		dataType: int64
+		isHidden
+		lineageTag: 8c906fca-b873-4df3-811a-97a772ea9de1
+		summarizeBy: none
+		sourceColumn: seller_key
+
+	column 'List Price'
+		dataType: decimal
+		formatString: "R$"#,0.00
+		lineageTag: 7e7acaea-f83d-41c8-984d-c1d4d94853de
+		summarizeBy: none
+		sourceColumn: list_price
+
+	column 'Base Unit Cost'
+		dataType: decimal
+		formatString: "R$"#,0.00
+		lineageTag: 893bbe1b-4995-4bf8-8a6b-032034bfdb86
+		summarizeBy: none
+		sourceColumn: base_unit_cost
+
+	column 'Planned Cover Days'
+		dataType: int64
+		isHidden
+		lineageTag: 7103784a-0227-45ec-9efd-b24dace9597e
+		summarizeBy: none
+		sourceColumn: planned_cover_days
+
+	column 'Forecast Bias'
+		dataType: double
+		isHidden
+		lineageTag: 5c398e08-cc00-4875-965a-b8f74d962c6e
+		summarizeBy: none
+		sourceColumn: forecast_bias
+
+	column 'Over Buyer Seller'
+		dataType: int64
+		isHidden
+		lineageTag: bcaf1657-4bb7-4191-b205-a8e4a8819b3e
+		summarizeBy: none
+		sourceColumn: over_buyer_seller
+
+	column 'First Sale Date'
+		dataType: dateTime
+		formatString: d mmm yyyy
+		lineageTag: 675f34c1-f610-439d-9976-7b65302cea47
+		summarizeBy: none
+		sourceColumn: first_sale_date
+
+	column 'Last Sale Date'
+		dataType: dateTime
+		formatString: d mmm yyyy
+		lineageTag: 52496c51-f776-4207-a928-77743a69c81e
+		summarizeBy: none
+		sourceColumn: last_sale_date
+
+	column 'Lifetime Units'
+		dataType: int64
+		lineageTag: aa7390b7-6b4b-4e94-881b-c7e71dac2b83
+		summarizeBy: none
+		sourceColumn: lifetime_units
+
+	/// Copied from Product so SKU level tables read from one table.
+	column Category = RELATED ( 'Product'[Category] )
+		dataType: string
+		lineageTag: ac548bc3-df55-42ba-8bf3-1df1cab47dc0
+
+	/// Copied from Seller so SKU level tables read from one table.
+	column Seller = RELATED ( Seller[Seller] )
+		dataType: string
+		lineageTag: f19dafa1-bebb-4b99-95e3-0e1c909b92dd
+
+	partition SKU = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ModelFolder & "dim_sku.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Headers, {{"sku_key", Int64.Type}, {"sku_code", type text}, {"product_key", Int64.Type}, {"seller_key", Int64.Type}, {"list_price", Currency.Type}, {"base_unit_cost", Currency.Type}, {"planned_cover_days", Int64.Type}, {"forecast_bias", type number}, {"over_buyer_seller", Int64.Type}, {"first_sale_date", type date}, {"last_sale_date", type date}, {"lifetime_units", Int64.Type}}, "en-US")
+				in
+				    Typed
+

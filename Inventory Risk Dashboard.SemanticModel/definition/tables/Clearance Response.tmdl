@@ -1,0 +1,15 @@
+/// What if: share of at risk units a markdown clears within 90 days, per 10 points of markdown. 10% to 40%.
+table 'Clearance Response'
+	lineageTag: 9be49df1-3215-45bd-af3c-878b95209fba
+
+	column 'Clearance Response'
+		formatString: 0%
+		lineageTag: d840be69-18e2-4687-be35-ebdb97310b9c
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Clearance Response]
+
+	partition 'Clearance Response' = calculated
+		mode: import
+		source = SELECTCOLUMNS(GENERATESERIES(2, 8, 1), "Clearance Response", ROUND([Value] * 0.05, 2))
+

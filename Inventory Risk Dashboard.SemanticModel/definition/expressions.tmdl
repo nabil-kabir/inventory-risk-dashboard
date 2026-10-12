@@ -1,0 +1,4 @@
+/// Folder holding the CSVs written by scripts/build_model.py. Change this if the project moves.
+expression ModelFolder = "C:\Users\USER\Documents\Power BI Projects\Inventory Risk Dashboard\data\model\" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: eb679c9c-5e40-4006-8ab7-de0fbfd6ad4a
+

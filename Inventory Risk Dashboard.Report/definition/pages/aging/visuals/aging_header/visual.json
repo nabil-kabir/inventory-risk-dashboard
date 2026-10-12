@@ -1,0 +1,51 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "aging_header",
+  "position": {
+    "x": 24,
+    "y": 6,
+    "z": 0,
+    "height": 76,
+    "width": 690,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "textbox",
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Aging deep dive",
+                    "textStyle": {
+                      "fontSize": "18pt",
+                      "color": "#ECE7DF",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontWeight": "bold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Where old stock sits, by category, price band and region. Drill down to the SKU.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#8B97A3",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

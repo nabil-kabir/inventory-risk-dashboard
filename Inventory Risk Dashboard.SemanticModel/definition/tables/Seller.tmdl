@@ -1,0 +1,55 @@
+/// Olist sellers with state and Brazilian region.
+table Seller
+	lineageTag: 4a9e53ff-e1ac-4d89-a6be-540471f9be4c
+
+	column 'Seller Key'
+		dataType: int64
+		isHidden
+		lineageTag: e66da9da-b02c-4a0a-a47f-3d7c776987db
+		summarizeBy: none
+		sourceColumn: seller_key
+
+	column 'Seller ID'
+		dataType: string
+		isHidden
+		lineageTag: 50072850-be9b-46cc-9e35-24f5ca47ac09
+		sourceColumn: seller_id
+
+	column Seller
+		dataType: string
+		lineageTag: e95ad944-2eb8-4771-9f6c-865d1fb4cf45
+		sourceColumn: seller_code
+
+	column City
+		dataType: string
+		lineageTag: ee076e11-c111-4c96-9cc0-ff59f12887b5
+		dataCategory: City
+		sourceColumn: seller_city
+
+	column 'State Code'
+		dataType: string
+		lineageTag: 85be46aa-4d3c-4304-8ff2-b0ae4f940429
+		dataCategory: StateOrProvince
+		sourceColumn: seller_state
+
+	column State
+		dataType: string
+		lineageTag: 32c759a4-51cc-485d-a88a-1330beeadde8
+		dataCategory: StateOrProvince
+		sourceColumn: state_name
+
+	column Region
+		dataType: string
+		lineageTag: b7971102-f951-4bf7-823e-3a751a327ee2
+		sourceColumn: region
+
+	partition Seller = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ModelFolder & "dim_seller.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Typed = Table.TransformColumnTypes(Headers, {{"seller_key", Int64.Type}, {"seller_id", type text}, {"seller_code", type text}, {"seller_city", type text}, {"seller_state", type text}, {"state_name", type text}, {"region", type text}}, "en-US")
+				in
+				    Typed
+

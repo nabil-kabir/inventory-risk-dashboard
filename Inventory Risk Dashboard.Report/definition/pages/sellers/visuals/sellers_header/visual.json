@@ -1,0 +1,51 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "sellers_header",
+  "position": {
+    "x": 24,
+    "y": 6,
+    "z": 0,
+    "height": 76,
+    "width": 690,
+    "tabOrder": 0
+  },
+  "visual": {
+    "visualType": "textbox",
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Seller and region view",
+                    "textStyle": {
+                      "fontSize": "18pt",
+                      "color": "#ECE7DF",
+                      "fontFamily": "Segoe UI Semibold",
+                      "fontWeight": "bold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Where risk concentrates: a few sellers and the Southeast hold most of it.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#8B97A3",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

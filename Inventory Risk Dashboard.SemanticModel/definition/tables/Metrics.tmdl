@@ -1,0 +1,405 @@
+/// Home for all measures.
+table Metrics
+	lineageTag: a3bd576d-3495-4f67-a3a8-823356ab122a
+
+	/// Latest month end stock snapshot in the current date filter.
+	measure 'As Of Date' = CALCULATE ( MAX ( 'Date'[Date] ), KEEPFILTERS ( 'Date'[Is Snapshot Date] = 1 ) )
+		formatString: d mmm yyyy
+		displayFolder: Stock
+		lineageTag: de4355b5-f306-437c-89a3-accf62c6b008
+
+	/// Stock on hand at cost on the as of date.
+	measure 'Stock Value' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE ( SUM ( 'Stock Snapshot'[Value at Cost] ), 'Date'[Date] = AsOf )
+		formatString: "R$"#,0
+		displayFolder: Stock
+		lineageTag: bdc09793-44ee-4af1-980f-5ab63ab46035
+
+	/// Units on hand on the as of date.
+	measure 'Stock Units' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE ( SUM ( 'Stock Snapshot'[Units on Hand] ), 'Date'[Date] = AsOf )
+		formatString: #,0
+		displayFolder: Stock
+		lineageTag: f2dd8b13-f1ee-493c-b4c8-9e8b816738c5
+
+	/// Cost value of units projected to pass 180 days old before they sell, at each SKU's last 90 day sales velocity, first in first out.
+	measure 'Value at Risk' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE ( SUM ( 'Stock Snapshot'[Value at Risk] ), 'Date'[Date] = AsOf )
+		formatString: "R$"#,0
+		displayFolder: Risk
+		lineageTag: 132f0bcc-721d-4cbf-8df0-a7cfef457d54
+
+	/// Units projected to pass 180 days old before they sell.
+	measure 'Units at Risk' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE ( SUM ( 'Stock Snapshot'[Units at Risk] ), 'Date'[Date] = AsOf )
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: 875292d9-83d4-47c9-9c78-e3c8bc6bda1a
+
+	/// Share of stock value at risk.
+	measure 'Value at Risk %' = DIVIDE ( [Value at Risk], [Stock Value] )
+		formatString: 0.0%
+		displayFolder: Risk
+		lineageTag: a4a65fed-7ea9-4705-9b91-960d47d70860
+
+	measure 'SKUs in Stock' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE ( DISTINCTCOUNT ( 'Stock Snapshot'[SKU Key] ), 'Date'[Date] = AsOf )
+		formatString: #,0
+		displayFolder: Stock
+		lineageTag: 9aa15384-6209-4438-b158-221851bc6e54
+
+	measure 'SKUs at Risk' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE (
+			        DISTINCTCOUNT ( 'Stock Snapshot'[SKU Key] ),
+			        'Date'[Date] = AsOf,
+			        'Stock Snapshot'[Units at Risk] > 0
+			    )
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: e0fc8af5-7f9a-452a-b13a-acb241c156fe
+
+	measure 'Stock Over 90 Days' = CALCULATE ( [Stock Value], KEEPFILTERS ( 'Aging Bucket'[Aging Bucket Key] >= 4 ) )
+		formatString: "R$"#,0
+		displayFolder: Aging
+		lineageTag: 703d3b4f-1b9c-476b-84a9-4a7dc1579995
+
+	measure 'Stock Over 180 Days' = CALCULATE ( [Stock Value], KEEPFILTERS ( 'Aging Bucket'[Aging Bucket Key] = 5 ) )
+		formatString: "R$"#,0
+		displayFolder: Aging
+		lineageTag: 99fcbefd-34b7-473b-a314-b3c75cfe08c8
+
+	measure 'Over 90 Days %' = DIVIDE ( [Stock Over 90 Days], [Stock Value] )
+		formatString: 0.0%
+		displayFolder: Aging
+		lineageTag: df04e7fd-87cd-4863-acf4-136d5d71fc36
+
+	measure 'Over 180 Days %' = DIVIDE ( [Stock Over 180 Days], [Stock Value] )
+		formatString: 0.0%
+		displayFolder: Aging
+		lineageTag: 93d14ad7-7dbf-4c79-94d0-03f22261baa5
+
+	/// Average age in days, weighted by value at cost.
+	measure 'Average Stock Age' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE (
+			        DIVIDE (
+			            SUMX ( 'Stock Snapshot', 'Stock Snapshot'[Age Days] * 'Stock Snapshot'[Value at Cost] ),
+			            SUM ( 'Stock Snapshot'[Value at Cost] )
+			        ),
+			        'Date'[Date] = AsOf
+			    )
+		formatString: #,0
+		displayFolder: Aging
+		lineageTag: 697e0973-24a7-4d66-bfd3-c6b477a1eb2c
+
+	measure Revenue = SUM ( Sales[Price] )
+		formatString: "R$"#,0
+		displayFolder: Sales
+		lineageTag: be89fb18-8ea4-4838-8ae7-2ea4dcc8ca0a
+
+	measure 'Units Sold' = SUM ( Sales[Units] )
+		formatString: #,0
+		displayFolder: Sales
+		lineageTag: ae423493-ce99-480f-bc76-4a07aaae9086
+
+	measure Orders = DISTINCTCOUNT ( Sales[Order ID] )
+		formatString: #,0
+		displayFolder: Sales
+		lineageTag: c714e418-33fa-420c-a362-f0f0d331d63e
+
+	/// Cost of goods sold, at the cost of the FIFO batch each unit came from.
+	measure COGS = SUMX ( Sales, Sales[Unit Cost] * Sales[Units] )
+		formatString: "R$"#,0
+		displayFolder: Sales
+		lineageTag: 225508d8-532d-42b5-98ff-5be12c128928
+
+	measure 'Gross Margin' = SUM ( Sales[Gross Margin] )
+		formatString: "R$"#,0
+		displayFolder: Sales
+		lineageTag: 20b42b27-4531-4e3a-a883-3d8894a51c41
+
+	measure 'Gross Margin %' = DIVIDE ( [Gross Margin], [Revenue] )
+		formatString: 0.0%
+		displayFolder: Sales
+		lineageTag: 8e2cc3d6-236a-45f2-886b-9e842ecf0731
+
+	measure 'Units Received' = SUM ( Receipts[Units Received] )
+		formatString: #,0
+		displayFolder: Receipts
+		lineageTag: 2f7d00c1-edce-4771-8bee-6969992bff8d
+
+	measure 'Receipts Value' = SUM ( Receipts[Value at Cost] )
+		formatString: "R$"#,0
+		displayFolder: Receipts
+		lineageTag: 98a9875b-92b3-413b-9c83-582656f2ea99
+
+	/// Units sold in the 30 days up to the as of date.
+	measure 'Units Sold 30D' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE ( [Units Sold], DATESINPERIOD ( 'Date'[Date], AsOf, -30, DAY ) )
+		formatString: #,0
+		displayFolder: Velocity
+		lineageTag: 9de567d3-06d0-45bf-9114-8b50a78ff62e
+
+	measure 'Units Sold 60D' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE ( [Units Sold], DATESINPERIOD ( 'Date'[Date], AsOf, -60, DAY ) )
+		formatString: #,0
+		displayFolder: Velocity
+		lineageTag: 22412500-63ff-418f-860c-4be3e1e49531
+
+	measure 'Units Sold 90D' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE ( [Units Sold], DATESINPERIOD ( 'Date'[Date], AsOf, -90, DAY ) )
+		formatString: #,0
+		displayFolder: Velocity
+		lineageTag: f130665b-b29c-43ab-a773-1698ec1c87bc
+
+	measure 'COGS 90D' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE ( [COGS], DATESINPERIOD ( 'Date'[Date], AsOf, -90, DAY ) )
+		formatString: "R$"#,0
+		displayFolder: Velocity
+		lineageTag: 11acffb0-e72d-4f25-96f8-3f52676d1ac1
+
+	/// Units sold in 30 days divided by units sold plus units still on hand.
+	measure 'Sell Through 30D' = DIVIDE ( [Units Sold 30D], [Units Sold 30D] + [Stock Units] )
+		formatString: 0.0%
+		displayFolder: Velocity
+		lineageTag: 1c2fcc95-c19e-4399-aa2e-f3f4aac97e5b
+
+	measure 'Sell Through 60D' = DIVIDE ( [Units Sold 60D], [Units Sold 60D] + [Stock Units] )
+		formatString: 0.0%
+		displayFolder: Velocity
+		lineageTag: 8d7bf669-d814-4218-8e1d-18073ca93bb5
+
+	measure 'Sell Through 90D' = DIVIDE ( [Units Sold 90D], [Units Sold 90D] + [Stock Units] )
+		formatString: 0.0%
+		displayFolder: Velocity
+		lineageTag: 8d35ca0e-050f-4f6c-8f89-551ee8d6d02d
+
+	/// Stock value divided by average daily cost of goods sold over the last 90 days.
+	measure 'Days of Inventory' = DIVIDE ( [Stock Value], DIVIDE ( [COGS 90D], 90 ) )
+		formatString: #,0
+		displayFolder: Velocity
+		lineageTag: f9f70f48-28e3-460d-824e-b56e9fe9b39d
+
+	/// Units on hand divided by average weekly units sold over the last 90 days.
+	measure 'Weeks of Cover' = DIVIDE ( [Stock Units], DIVIDE ( [Units Sold 90D], 90 ) * 7 )
+		formatString: #,0.0
+		displayFolder: Velocity
+		lineageTag: 1c1950f8-e782-489b-9d88-380174b37032
+
+	/// Annualised: last 90 days cost of goods sold times 365/90, divided by stock value.
+	measure 'Inventory Turns' = DIVIDE ( [COGS 90D] * 365 / 90, [Stock Value] )
+		formatString: #,0.0
+		displayFolder: Velocity
+		lineageTag: 318fc5ab-beb6-4fd0-a845-c2a3ccae14ec
+
+	/// Cost value of stock cleared in the period.
+	measure 'Write Off Value' = SUM ( 'Write Offs'[Value at Cost] )
+		formatString: "R$"#,0
+		displayFolder: Write Offs
+		lineageTag: e6818040-a2c6-4837-b696-311c90953976
+
+	/// Cost value cleared minus what clearance recovered.
+	measure 'Write Off Loss' = SUM ( 'Write Offs'[Loss Value] )
+		formatString: "R$"#,0
+		displayFolder: Write Offs
+		lineageTag: 5062d4b9-db6c-4e42-b626-8c1914ea1579
+
+	/// Write off loss in the 12 months up to the as of date.
+	measure 'Write Off Loss 12M' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE ( [Write Off Loss], DATESINPERIOD ( 'Date'[Date], AsOf, -12, MONTH ) )
+		formatString: "R$"#,0
+		displayFolder: Write Offs
+		lineageTag: d9616b91-d17f-422b-b4ab-0f31236dfb69
+
+	/// Share of cost recovered when aged stock was cleared, across all history and products. Used as the fallback for stock that is not marked down.
+	measure 'Clearance Recovery Rate' =
+			CALCULATE (
+			    DIVIDE ( SUM ( 'Write Offs'[Recovered Value] ), SUM ( 'Write Offs'[Value at Cost] ) ),
+			    REMOVEFILTERS ()
+			)
+		formatString: 0.0%
+		displayFolder: Write Offs
+		lineageTag: b002d509-dc81-481b-9b0c-1cc18b23fd0b
+
+	/// Markdown chosen on the slider; 30% if none.
+	measure 'Selected Markdown' = SELECTEDVALUE ( Markdown[Markdown], 0.3 )
+		formatString: 0%
+		displayFolder: Scenario
+		lineageTag: 21a66c75-4ff9-4b41-9d52-ecfc513db20d
+
+	/// Share of at risk units cleared within 90 days per 10 points of markdown; 15% if none chosen.
+	measure 'Selected Clearance Response' = SELECTEDVALUE ( 'Clearance Response'[Clearance Response], 0.15 )
+		formatString: 0%
+		displayFolder: Scenario
+		lineageTag: fc45a15e-98f9-4f55-b823-e3293814ad17
+
+	/// Share of at risk units the selected markdown is expected to sell.
+	measure 'Markdown Sell Through' = MIN ( 1, [Selected Clearance Response] * [Selected Markdown] / 0.1 )
+		formatString: 0%
+		displayFolder: Scenario
+		lineageTag: f9d2b55a-52b8-4529-af09-d7ce26df1d3d
+
+	/// At risk units valued at each SKU's normal selling price.
+	measure 'Value at Risk at List Price' =
+			VAR AsOf = [As Of Date]
+			RETURN
+			    CALCULATE (
+			        SUMX ( 'Stock Snapshot', 'Stock Snapshot'[Units at Risk] * RELATED ( SKU[List Price] ) ),
+			        'Date'[Date] = AsOf
+			    )
+		formatString: "R$"#,0
+		displayFolder: Scenario
+		lineageTag: e52ab653-2ddf-460b-8926-762853170c33
+
+	/// If nothing is done, at risk stock is cleared later at the historical recovery rate.
+	measure 'Projected Loss No Action' = [Value at Risk] * ( 1 - [Clearance Recovery Rate] )
+		formatString: "R$"#,0
+		displayFolder: Scenario
+		lineageTag: 661f501b-fa08-4f6e-a952-6dc081a39ac9
+
+	/// Revenue from at risk units sold at the selected markdown.
+	measure 'Markdown Revenue' = [Value at Risk at List Price] * [Markdown Sell Through] * ( 1 - [Selected Markdown] )
+		formatString: "R$"#,0
+		displayFolder: Scenario
+		lineageTag: c0d13fbc-0a3c-4346-9bac-9f31c3c447cd
+
+	/// Markdown revenue plus clearance recovery on the units the markdown does not sell.
+	measure 'Recovered With Markdown' =
+			[Markdown Revenue]
+			    + [Value at Risk] * ( 1 - [Markdown Sell Through] ) * [Clearance Recovery Rate]
+		formatString: "R$"#,0
+		displayFolder: Scenario
+		lineageTag: 4c88a94e-c322-4ddc-9137-e2d47e04681b
+
+	/// Value at risk minus what the markdown plan recovers. Shown as a gain if the markdown recovers more than cost.
+	measure 'Projected Loss With Markdown' = [Value at Risk] - [Recovered With Markdown]
+		formatString: "R$"#,0;"R$"#,0 gain
+		displayFolder: Scenario
+		lineageTag: a79cb2f5-ecf5-482f-ad9e-dc15245c5796
+
+	/// Loss avoided by marking down now instead of clearing later.
+	measure 'Value Saved by Markdown' = [Projected Loss No Action] - [Projected Loss With Markdown]
+		formatString: "R$"#,0
+		displayFolder: Scenario
+		lineageTag: 8c4070ac-c95e-4519-abfc-83f0fc780e35
+
+	/// The markdown step (0% to 60%) that recovers the most for the stock in context, given the clearance response.
+	measure 'Suggested Markdown' =
+			VAR RiskValue = [Value at Risk]
+			VAR RiskAtList = [Value at Risk at List Price]
+			VAR Response = [Selected Clearance Response]
+			VAR Recovery = [Clearance Recovery Rate]
+			VAR Options =
+			    ADDCOLUMNS (
+			        ADDCOLUMNS ( ALL ( Markdown[Markdown] ), "@SellThrough", MIN ( 1, Response * Markdown[Markdown] / 0.1 ) ),
+			        "@Recovered",
+			            RiskAtList * [@SellThrough] * ( 1 - Markdown[Markdown] )
+			                + RiskValue * ( 1 - [@SellThrough] ) * Recovery
+			    )
+			VAR Best = TOPN ( 1, Options, [@Recovered], DESC, Markdown[Markdown], ASC )
+			RETURN
+			    IF ( RiskValue > 0, MAXX ( Best, Markdown[Markdown] ) )
+		formatString: 0%
+		displayFolder: Scenario
+		lineageTag: ea691f11-c220-4efe-9f9b-c4b0278b44a0
+
+	/// Loss avoided if each SKU in context gets its own suggested markdown.
+	measure 'Value Saved at Suggested Markdown' =
+			VAR Response = [Selected Clearance Response]
+			VAR Recovery = [Clearance Recovery Rate]
+			RETURN
+			    SUMX (
+			        VALUES ( SKU[SKU Key] ),
+			        VAR RiskValue = [Value at Risk]
+			        VAR RiskAtList = [Value at Risk at List Price]
+			        VAR BestRecovered =
+			            MAXX (
+			                ALL ( Markdown[Markdown] ),
+			                VAR SellThrough = MIN ( 1, Response * Markdown[Markdown] / 0.1 )
+			                RETURN
+			                    RiskAtList * SellThrough * ( 1 - Markdown[Markdown] )
+			                        + RiskValue * ( 1 - SellThrough ) * Recovery
+			            )
+			        RETURN
+			            IF ( RiskValue > 0, BestRecovered - RiskValue * Recovery )
+			    )
+		formatString: "R$"#,0
+		displayFolder: Scenario
+		lineageTag: 8a571c1b-0167-4599-bfcc-f2bda1a83432
+
+	/// One line summary for the executive page.
+	measure Headline =
+			VAR Risk = [Value at Risk]
+			RETURN
+			    "R$" & FORMAT ( Risk / 1000, "#,0" ) & "K of stock (" & FORMAT ( [Value at Risk %], "0%" )
+			        & ") will pass 180 days before it sells. A " & FORMAT ( [Selected Markdown], "0%" )
+			        & " markdown now saves about R$" & FORMAT ( [Value Saved by Markdown] / 1000, "#,0" ) & "K."
+		displayFolder: Scenario
+		lineageTag: 38da60e0-81a9-4e93-89c0-e5a0b61cdd02
+
+	/// Sellers holding any stock at risk on the as of date.
+	measure 'Sellers at Risk' = COUNTROWS ( FILTER ( VALUES ( Seller[Seller Key] ), [Value at Risk] > 0 ) )
+		formatString: #,0
+		displayFolder: Risk
+		lineageTag: f59f8090-61bd-4a09-a661-3602255883c1
+
+	/// Share of value at risk held by the 20 sellers with the most at risk.
+	measure 'Top 20 Sellers Share of Risk' =
+			VAR Top20 = TOPN ( 20, VALUES ( Seller[Seller Key] ), [Value at Risk], DESC )
+			RETURN
+			    DIVIDE ( SUMX ( Top20, [Value at Risk] ), [Value at Risk] )
+		formatString: 0%
+		displayFolder: Risk
+		lineageTag: bc75f715-fcfe-485b-ada4-08815e322735
+
+	/// Stock Value as text in millions, for cards (the card visual otherwise rounds to R$1M).
+	measure 'Stock Value Card' =
+			VAR v = [Stock Value]
+			RETURN
+			    IF ( NOT ISBLANK ( v ), "R$" & FORMAT ( v / 1000000, "0.00" ) & "M" )
+		displayFolder: Card Labels
+		lineageTag: 06d7d4dd-3df7-44d6-9bd9-2836c411c094
+
+	/// Sellers at Risk as text with thousands separator, for cards.
+	measure 'Sellers at Risk Card' = FORMAT ( [Sellers at Risk], "#,0" )
+		displayFolder: Card Labels
+		lineageTag: bd8b458f-ee2e-4fb2-9a06-f059d84fb25b
+
+	/// SKUs at Risk as text with thousands separator, for cards.
+	measure 'SKUs at Risk Card' = FORMAT ( [SKUs at Risk], "#,0" )
+		displayFolder: Card Labels
+		lineageTag: 9bab654a-96b0-4a39-9d2a-2c4ae83b3dcc
+
+	column Value
+		isHidden
+		lineageTag: 3472d920-f6e3-4adb-8e61-bc5050deca4e
+		isNameInferred
+		sourceColumn: [Value]
+
+	partition Metrics = calculated
+		mode: import
+		source = { BLANK() }
+

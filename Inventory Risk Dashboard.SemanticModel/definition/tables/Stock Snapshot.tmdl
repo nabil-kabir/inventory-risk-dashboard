@@ -1,0 +1,111 @@
+/// Simulated stock on hand at each month end, one row per batch. Units at risk are those projected to pass 180 days before they sell at the SKU's current 90 day velocity, in FIFO order.
+table 'Stock Snapshot'
+	lineageTag: 421f1272-a100-4142-b2e7-8cd6bf1bebc8
+
+	column 'Snapshot Date'
+		dataType: dateTime
+		isHidden
+		formatString: d mmm yyyy
+		lineageTag: 6f4ce2c1-3461-4784-82d1-c52732af6371
+		summarizeBy: none
+		sourceColumn: snapshot_date
+
+	column 'SKU Key'
+		dataType: int64
+		isHidden
+		lineageTag: bf574d8c-5c46-46e4-a203-1aae73273bb8
+		summarizeBy: none
+		sourceColumn: sku_key
+
+	column 'Batch ID'
+		dataType: int64
+		isHidden
+		lineageTag: eb000c24-de8a-4c4a-b3bd-da78d9af4485
+		summarizeBy: none
+		sourceColumn: batch_id
+
+	column 'Received Date'
+		dataType: dateTime
+		isHidden
+		formatString: d mmm yyyy
+		lineageTag: db86ef64-c42f-4758-a64c-34b12b455f93
+		summarizeBy: none
+		sourceColumn: received_date
+
+	column 'Age Days'
+		dataType: int64
+		isHidden
+		lineageTag: 90ad025e-c0d8-4415-b236-f9f8d08371e9
+		summarizeBy: none
+		sourceColumn: age_days
+
+	column 'Aging Bucket Key'
+		dataType: int64
+		isHidden
+		lineageTag: 169cd467-400f-4561-86be-86bf33ff6cb3
+		summarizeBy: none
+		sourceColumn: aging_bucket_key
+
+	column 'Units on Hand'
+		dataType: int64
+		isHidden
+		lineageTag: a8eebb8c-f027-4975-a1ab-5566560729fa
+		sourceColumn: units_on_hand
+
+	column 'Unit Cost'
+		dataType: decimal
+		isHidden
+		lineageTag: 8957ea14-fef0-4258-acad-37c81a8743b5
+		summarizeBy: none
+		sourceColumn: unit_cost
+
+	column 'Value at Cost'
+		dataType: decimal
+		isHidden
+		lineageTag: 0b910325-ffd9-4362-acb2-bf12081f559d
+		sourceColumn: value_at_cost
+
+	column 'Units Ahead FIFO'
+		dataType: int64
+		isHidden
+		lineageTag: c9867ade-3d52-407e-9ca1-1c56266f49f5
+		summarizeBy: none
+		sourceColumn: units_ahead_fifo
+
+	column 'SKU Units on Hand'
+		dataType: int64
+		isHidden
+		lineageTag: 18030ef4-2001-46e8-a02e-f3d5cc6c0897
+		summarizeBy: none
+		sourceColumn: sku_units_on_hand
+
+	column 'SKU Velocity per Day'
+		dataType: double
+		isHidden
+		lineageTag: 8c838bdd-cf96-4955-9661-75740de73260
+		summarizeBy: none
+		sourceColumn: sku_velocity_per_day
+
+	column 'Units at Risk'
+		dataType: double
+		isHidden
+		lineageTag: b46214a7-12b2-4e3c-9b58-72717f388e34
+		sourceColumn: units_at_risk
+
+	column 'Value at Risk'
+		dataType: decimal
+		isHidden
+		lineageTag: f1f1b45d-29ef-4cd1-9252-0208f1b375ff
+		sourceColumn: value_at_risk
+
+	partition 'Stock Snapshot' = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ModelFolder & "fact_stock_snapshot.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Kept = Table.SelectColumns(Headers, {"snapshot_date", "sku_key", "batch_id", "received_date", "age_days", "aging_bucket_key", "units_on_hand", "unit_cost", "value_at_cost", "units_ahead_fifo", "sku_units_on_hand", "sku_velocity_per_day", "units_at_risk", "value_at_risk"}),
+				    Typed = Table.TransformColumnTypes(Kept, {{"snapshot_date", type date}, {"sku_key", Int64.Type}, {"batch_id", Int64.Type}, {"received_date", type date}, {"age_days", Int64.Type}, {"aging_bucket_key", Int64.Type}, {"units_on_hand", Int64.Type}, {"unit_cost", Currency.Type}, {"value_at_cost", Currency.Type}, {"units_ahead_fifo", Int64.Type}, {"sku_units_on_hand", Int64.Type}, {"sku_velocity_per_day", type number}, {"units_at_risk", type number}, {"value_at_risk", Currency.Type}}, "en-US")
+				in
+				    Typed
+

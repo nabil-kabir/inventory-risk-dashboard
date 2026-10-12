@@ -1,0 +1,82 @@
+/// Simulated clearance: batches unsold 270 days after arrival, cleared at month end for 10% to 40% of cost.
+table 'Write Offs'
+	lineageTag: 0b83f85f-40d9-4bf4-b201-491c4d826ae6
+
+	column 'Write Off Date'
+		dataType: dateTime
+		isHidden
+		formatString: d mmm yyyy
+		lineageTag: 19e66138-e508-4968-829b-60e139cf987b
+		summarizeBy: none
+		sourceColumn: writeoff_date
+
+	column 'Batch ID'
+		dataType: int64
+		isHidden
+		lineageTag: 9b3b86a2-0832-4a8e-be53-da7ca45c8722
+		summarizeBy: none
+		sourceColumn: batch_id
+
+	column 'SKU Key'
+		dataType: int64
+		isHidden
+		lineageTag: 1690f0b6-dcaa-4271-9b28-00897a558099
+		summarizeBy: none
+		sourceColumn: sku_key
+
+	column 'Age Days'
+		dataType: int64
+		isHidden
+		lineageTag: 52e15295-0d20-4a0f-ab95-c04167256a1e
+		summarizeBy: none
+		sourceColumn: age_days
+
+	column Units
+		dataType: int64
+		isHidden
+		lineageTag: d31d2240-e8c8-4808-8698-b169b9ad993e
+		sourceColumn: units
+
+	column 'Unit Cost'
+		dataType: decimal
+		isHidden
+		lineageTag: 26855c89-202a-4a91-bef5-60c544fabfa3
+		summarizeBy: none
+		sourceColumn: unit_cost
+
+	column 'Value at Cost'
+		dataType: decimal
+		isHidden
+		lineageTag: 7b61027f-6006-4fbc-a5f5-10f41b05929e
+		sourceColumn: value_at_cost
+
+	column 'Recovery Rate'
+		dataType: double
+		isHidden
+		lineageTag: eee90750-1177-4f22-b473-395e3014b3b4
+		summarizeBy: none
+		sourceColumn: recovery_rate
+
+	column 'Recovered Value'
+		dataType: decimal
+		isHidden
+		lineageTag: 84c6c128-f2d7-419f-b6b0-87edd7797279
+		sourceColumn: recovered_value
+
+	column 'Loss Value'
+		dataType: decimal
+		isHidden
+		lineageTag: c88c8f24-d5a0-480a-97dc-90d3cdacab90
+		sourceColumn: loss_value
+
+	partition 'Write Offs' = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents(ModelFolder & "fact_writeoffs.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+				    Headers = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+				    Kept = Table.SelectColumns(Headers, {"writeoff_date", "batch_id", "sku_key", "age_days", "units", "unit_cost", "value_at_cost", "recovery_rate", "recovered_value", "loss_value"}),
+				    Typed = Table.TransformColumnTypes(Kept, {{"writeoff_date", type date}, {"batch_id", Int64.Type}, {"sku_key", Int64.Type}, {"age_days", Int64.Type}, {"units", Int64.Type}, {"unit_cost", Currency.Type}, {"value_at_cost", Currency.Type}, {"recovery_rate", type number}, {"recovered_value", Currency.Type}, {"loss_value", Currency.Type}}, "en-US")
+				in
+				    Typed
+

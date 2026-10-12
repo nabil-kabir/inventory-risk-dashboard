@@ -1,0 +1,44 @@
+relationship SKU_Product
+	fromColumn: SKU.'Product Key'
+	toColumn: Product.'Product Key'
+
+relationship SKU_Seller
+	fromColumn: SKU.'Seller Key'
+	toColumn: Seller.'Seller Key'
+
+relationship Sales_SKU
+	fromColumn: Sales.'SKU Key'
+	toColumn: SKU.'SKU Key'
+
+relationship Receipts_SKU
+	fromColumn: Receipts.'SKU Key'
+	toColumn: SKU.'SKU Key'
+
+relationship StockSnapshot_SKU
+	fromColumn: 'Stock Snapshot'.'SKU Key'
+	toColumn: SKU.'SKU Key'
+
+relationship WriteOffs_SKU
+	fromColumn: 'Write Offs'.'SKU Key'
+	toColumn: SKU.'SKU Key'
+
+relationship Sales_Date
+	fromColumn: Sales.'Order Date'
+	toColumn: Date.Date
+
+relationship Receipts_Date
+	fromColumn: Receipts.'Received Date'
+	toColumn: Date.Date
+
+relationship StockSnapshot_Date
+	fromColumn: 'Stock Snapshot'.'Snapshot Date'
+	toColumn: Date.Date
+
+relationship WriteOffs_Date
+	fromColumn: 'Write Offs'.'Write Off Date'
+	toColumn: Date.Date
+
+relationship StockSnapshot_AgingBucket
+	fromColumn: 'Stock Snapshot'.'Aging Bucket Key'
+	toColumn: 'Aging Bucket'.'Aging Bucket Key'
+

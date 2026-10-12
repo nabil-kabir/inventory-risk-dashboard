@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.12.0/schema.json",
+  "name": "liquidation_footer",
+  "position": {
+    "x": 24,
+    "y": 678,
+    "z": 11000,
+    "height": 42,
+    "width": 1232,
+    "tabOrder": 11000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Marked down units sell at list price less the markdown. Stock the markdown does not clear is cleared later at the historical recovery rate (about 25% of cost).  ·  as of 31 July 2018",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#8B97A3",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

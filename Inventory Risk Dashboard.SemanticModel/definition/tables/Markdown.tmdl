@@ -1,0 +1,15 @@
+/// What if: markdown applied to stock at risk, 0% to 60% in 5 point steps.
+table Markdown
+	lineageTag: 303dc100-11b3-4367-bd1f-1bd47c56a4c2
+
+	column Markdown
+		formatString: 0%
+		lineageTag: 91e09124-ea49-4d8e-b026-baf6fd33290d
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Markdown]
+
+	partition Markdown = calculated
+		mode: import
+		source = SELECTCOLUMNS(GENERATESERIES(0, 12, 1), "Markdown", ROUND([Value] * 0.05, 2))
+
